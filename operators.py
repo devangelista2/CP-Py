@@ -81,6 +81,8 @@ class GradientOperator(Operator):
         self.img_shape = img_shape
         self.shape = (img_shape[0] * img_shape[1], img_shape[0] * img_shape[1])
 
+        self.m, self.n = img_shape
+
     def _matvec(self, x):
         D = np.zeros((2,) + self.img_shape)
         D[0] = np.diff(x.reshape(self.img_shape), n=1, axis=1, prepend=0)

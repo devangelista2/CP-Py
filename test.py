@@ -25,16 +25,35 @@ if __name__ == "__main__":
     my, ny = n_angles, det_size
 
     # Choose tests
-    cp_tpv = True
+    cp_tpv = False
+    ircp_tpv = False
     constrained_cp_tpv = False
-    icp_tpv = False
+    icp_tpv = True
 
     if cp_tpv:
+        # Solve
+        CP_TpV = solvers.ChambollePockTpV(K)
+        x_sol, obj_f = CP_TpV(
+            y_delta, lmbda=1, p=1, maxit=500, verbose=False, return_obj=True
+        )
+
+        print(
+            np.linalg.norm(x_sol.flatten() - x_true.flatten(), 2)
+            / np.linalg.norm(x_true.flatten())
+        )
+
+        plt.imshow(x_sol, cmap="gray")
+        plt.show()
+
+        plt.semilogy(obj_f)
+        plt.show()
+
+    if ircp_tpv:
         # Solve
         CP_TpV = solvers.IRChambollePockTpV(K)
         x_sol = CP_TpV(
             y_delta,
-            lmbda=100,
+            lmbda=1,
             p=1,
             maxit=500,
             verbose=False,
@@ -53,10 +72,11 @@ if __name__ == "__main__":
         constrained_CP_TpV = solvers.ConstrainedChambollePockTpV(K)
         x_sol = constrained_CP_TpV(
             y_delta,
-            0,
             lmbda=1,
-            maxiter=500,
+            epsilon=np.linalg.norm(e.flatten(), 2),
             p=1,
+            maxit=500,
+            verbose=False,
         )
 
         print(
@@ -69,13 +89,14 @@ if __name__ == "__main__":
 
     if icp_tpv:
         # Solve
-        iCP_TpV = solvers.IterativeChambollePockTpV(K)
+        iCP_TpV = solvers.IteratedChambollePockTpV(K, alpha=0.8)
         x_sol, obj = iCP_TpV(
             y_delta,
-            lmbda=500,
+            x_true=x_true,
+            lmbda=1,
             H=10,
             p=1,
-            maxit=80,
+            maxit=50,
             return_obj=True,
             verbose=True,
             tolx=1e-8,

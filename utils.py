@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def power_method(K, gradient, maxit=10):
+def power_method(K, gradient=None, maxit=10):
     """
     Calculates the norm of operator M = [grad, K],
     i.e the sqrt of the largest eigenvalue of M^T*M = -div(grad) + M^T*M :
@@ -15,10 +15,13 @@ def power_method(K, gradient, maxit=10):
 
     x = np.random.rand(mx, nx)
     for _ in range(0, maxit):
-        x = K.T(K(x)) + gradient.T(gradient(x))
+        if gradient is not None:
+            x = K.T(K(x)) + gradient.T(gradient(x))
+        else:
+            x = K.T(K(x))
         x_norm = np.linalg.norm(x.flatten(), 2)
-        x /= x_norm
-    return np.sqrt(x_norm)
+        x = x / x_norm
+    return x_norm
 
 
 def proj_l2(D):
@@ -49,5 +52,5 @@ def prox_l1_reweighted(z, W, lmbda):
     """
     abs_z = np.repeat(np.expand_dims(gradient_magnitude(z), 0), 2, axis=0)
     lmbda_W = lmbda * W
-    z = lmbda_W * z / np.maximum(lmbda_W, abs_z)
+    z = np.multiply(lmbda_W, z) / np.maximum(lmbda_W, abs_z)
     return z
